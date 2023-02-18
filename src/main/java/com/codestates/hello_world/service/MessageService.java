@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MessageService {
-    private final MessageRepository messageRepository;
+    private final MessageRepository messageRepository; // Repository 인터페이스를 서비스 클래스에서 사용할 수 있도록 DI(의존성 부여)
 
     public MessageService(MessageRepository messageRepository) {
         this.messageRepository = messageRepository;

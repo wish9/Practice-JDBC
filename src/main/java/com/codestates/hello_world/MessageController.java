@@ -27,8 +27,7 @@ public class MessageController {
     @PostMapping
     public ResponseEntity postMessage(
             @Valid @RequestBody MessagePostDto messagePostDto) {
-        Message message =
-                messageService.createMessage(mapper.messageDtoToMessage(messagePostDto));
+        Message message = messageService.createMessage(mapper.messageDtoToMessage(messagePostDto)); // DI 된 Repository의 메서드를 사용
 
         return ResponseEntity.ok(mapper.messageToMessageResponseDto(message));
     }
