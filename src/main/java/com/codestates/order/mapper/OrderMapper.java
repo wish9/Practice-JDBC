@@ -2,7 +2,7 @@ package com.codestates.order.mapper;
 
 import com.codestates.coffee.dto.CoffeeResponseDto;
 import com.codestates.coffee.entity.Coffee;
-import com.codestates.coffee.entity.CoffeeRef;
+import com.codestates.order.entity.CoffeeRef;
 import com.codestates.order.entity.Order;
 import com.codestates.order.dto.OrderPostDto;
 import com.codestates.order.dto.OrderResponseDto;
