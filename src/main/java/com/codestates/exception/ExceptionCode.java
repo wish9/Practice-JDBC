@@ -2,7 +2,6 @@ package com.codestates.exception;
 
 import lombok.Getter;
 
-// TODO 수정됨
 public enum ExceptionCode {
     MEMBER_NOT_FOUND(404, "Member not found"),
     MEMBER_EXISTS(409, "Member exists"),

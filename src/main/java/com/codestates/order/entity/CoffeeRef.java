@@ -1,12 +1,13 @@
 package com.codestates.order.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
-@AllArgsConstructor
+@Builder // 빌더 자동 생성
 @Table("ORDER_COFFEE")
 public class CoffeeRef { // Order 클래스와 Coffee 클래스가 N대N 관계이기 때문에 추가한 중간 엔티티
     // Order 클래스와 동일한 애그리거트에 있는 엔티티다.

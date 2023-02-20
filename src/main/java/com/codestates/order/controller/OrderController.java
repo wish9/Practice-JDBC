@@ -11,9 +11,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/v10/orders")
 @Validated
 public class OrderController {
+    private final static String ORDER_DEFAULT_URL = "/v10/orders"; // Default URL 경로 설정
     private final OrderService orderService;
     private final OrderMapper mapper;
     private final CoffeeService coffeeService;
@@ -37,16 +40,22 @@ public class OrderController {
     public ResponseEntity postOrder(@Valid @RequestBody OrderPostDto orderPostDto) {
         Order order =
                 orderService.createOrder(mapper.orderPostDtoToOrder(orderPostDto));
-        List<Coffee> coffees = coffeeService.findOrderedCoffees(order);
-        return new ResponseEntity<>(mapper.orderToOrderResponseDto(order, coffees),
-                HttpStatus.CREATED);
+
+        URI location = //  등록된 주문(Resource)에 해당하는 URI 객체
+                UriComponentsBuilder
+                        .newInstance()
+                        .path(ORDER_DEFAULT_URL + "/{order-id}")
+                        .buildAndExpand(order.getOrderId())
+                        .toUri();
+
+        return ResponseEntity.created(location).build(); // response header에 리소스의 위치정보 추가해서 응답
+        // .created() 메서드가 `201 Created` HTTP Status를 추가해줌
     }
 
     @GetMapping("/{order-id}")
     public ResponseEntity getOrder(@PathVariable("order-id") @Positive long orderId) {
         Order order = orderService.findOrder(orderId);
-        List<Coffee> coffees = coffeeService.findOrderedCoffees(order);
-        return new ResponseEntity<>(mapper.orderToOrderResponseDto(order, coffees),
+        return new ResponseEntity<>(mapper.orderToOrderResponseDto(coffeeService, order),
                 HttpStatus.OK);
     }
 
@@ -57,10 +66,7 @@ public class OrderController {
         List<OrderResponseDto> response =
                 orders
                     .stream()
-                    .map(order -> {
-                        List<Coffee> coffees = coffeeService.findOrderedCoffees(order);
-                        return mapper.orderToOrderResponseDto(order, coffees);
-                    })
+                    .map(order -> mapper.orderToOrderResponseDto(coffeeService, order))
                     .collect(Collectors.toList());
 
         return new ResponseEntity<>(response, HttpStatus.OK);

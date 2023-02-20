@@ -8,11 +8,10 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Getter
-@Setter
 public class OrderPostDto {
     @Positive
     private long memberId;
 
-    @Valid
+    @Valid // 유효성 검증을 위해 추가
     private List<OrderCoffeeDto> orderCoffees;
 }

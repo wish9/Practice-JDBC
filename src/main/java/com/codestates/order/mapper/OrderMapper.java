@@ -2,6 +2,8 @@ package com.codestates.order.mapper;
 
 import com.codestates.coffee.dto.CoffeeResponseDto;
 import com.codestates.coffee.entity.Coffee;
+import com.codestates.coffee.service.CoffeeService;
+import com.codestates.order.dto.OrderCoffeeResponseDto;
 import com.codestates.order.entity.CoffeeRef;
 import com.codestates.order.entity.Order;
 import com.codestates.order.dto.OrderPostDto;
@@ -22,25 +24,20 @@ public interface OrderMapper {
                                                         orderPostDto.getMemberId()));
         Set<CoffeeRef> orderCoffees = orderPostDto.getOrderCoffees()
                 .stream()
-                .map(orderCoffeeDto -> new CoffeeRef(orderCoffeeDto.getCoffeeId(),
-                        orderCoffeeDto.getQuantity()))
+                .map(orderCoffeeDto -> CoffeeRef.builder()
+                        .coffeeId(orderCoffeeDto.getCoffeeId())
+                        .quantity(orderCoffeeDto.getQuantity())
+                        .build())
                 .collect(Collectors.toSet());
+
         order.setOrderCoffees(orderCoffees);
-        order.setCreatedAt(LocalDateTime.now());
         return order;
     }
 
-    default OrderResponseDto orderToOrderResponseDto(Order order,
-                                                     List<Coffee> coffees) {
-        List<CoffeeResponseDto> orderCoffees =
-                coffees
-                        .stream()
-                        .map(coffee ->
-                                new CoffeeResponseDto(coffee.getCoffeeId(),
-                                        coffee.getKorName(),
-                                        coffee.getEngName(),
-                                        coffee.getPrice()))
-                        .collect(Collectors.toList());
+    default OrderResponseDto orderToOrderResponseDto(CoffeeService coffeeService, Order order) {
+
+        List<OrderCoffeeResponseDto> orderCoffees = orderToOrderCoffeeResponseDto(coffeeService, order.getOrderCoffees());
+
         long memberId = order.getMemberId().getId();
 
         OrderResponseDto orderResponseDto = new OrderResponseDto();
@@ -50,8 +47,22 @@ public interface OrderMapper {
         orderResponseDto.setOrderId(order.getOrderId());
         orderResponseDto.setOrderStatus(order.getOrderStatus());
 
-        // TODO 주문에 대한 더 자세한 정보로의 변환은 요구 사항에 따라 다를 수 있습니다.
 
         return orderResponseDto;
+    }
+
+    default List<OrderCoffeeResponseDto> orderToOrderCoffeeResponseDto(
+            CoffeeService coffeeService,
+            Set<CoffeeRef> orderCoffees) {
+        return orderCoffees.stream()
+                .map(coffeeRef -> {
+                    Coffee coffee = coffeeService.findCoffee(coffeeRef.getCoffeeId());
+
+                    return new OrderCoffeeResponseDto(coffee.getCoffeeId(),
+                            coffee.getKorName(),
+                            coffee.getEngName(),
+                            coffee.getPrice(),
+                            coffeeRef.getQuantity());
+                }).collect(Collectors.toList());
     }
 }
